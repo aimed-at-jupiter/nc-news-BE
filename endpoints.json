@@ -3,23 +3,25 @@
     "description": "serves up a json representation of all the available endpoints of the api"
   },
   "GET /api/topics": {
-    "description": "serves an array of all topics",
+    "description": "serves an object with the key of topics and the value of an array of all topics as objects",
     "queries": [],
     "exampleResponse": {
       "topics": [{ "slug": "football", "description": "Footie!" }]
     }
   },
   "GET /api/articles": {
-    "description": "serves an array of all articles",
+    "description": "serves an object with the key of articles and the value of an array of all articles as objects.",
     "exampleResponse": {
       "articles": [
         {
-          "title": "Seafood substitutions are increasing",
+          "article_id": 34,
+          "author": "grumpy19",
+          "title": "The Notorious MSG’s Unlikely Formula For Success",
           "topic": "cooking",
-          "author": "weegembump",
-          "created_at": "2018-05-30T15:59:13.341Z",
+          "created_at": "2020-11-22T11:13:00.000Z",
           "votes": 0,
-          "comment_count": 6
+          "article_img_url": "https://images.pexels.com/photos/2403392/pexels-photo-2403392.jpeg?w=700&h=700",
+          "comment_count": 11
         }
       ]
     }
