@@ -1,6 +1,6 @@
 const db = require("../connection");
 const format = require("pg-format");
-const { convertTimestampToDate } = require("./utils");
+const { convertTimestampToDate, lookupObj } = require("./utils");
 
 const seed = ({ topicData, userData, articleData, commentData }) => {
   return db
@@ -109,19 +109,24 @@ const seed = ({ topicData, userData, articleData, commentData }) => {
       );
       return db.query(articleSqlString);
     })
-    .then(() => {
-      const CommentDataUpdatedDates = commentData.map((comment) => {
-        return convertTimestampToDate(comment);
+    .then(({ rows }) => {
+      const articleLookupObj = lookupObj(rows, "title", "article_id");
+
+      const formattedCommentData = commentData.map((comment) => {
+        const updatedComment = convertTimestampToDate(comment);
+        return [
+          articleLookupObj[comment.article_title],
+          updatedComment.body,
+          updatedComment.votes,
+          updatedComment.author,
+          updatedComment.created_at,
+        ];
       });
-      const formattedCommentData = CommentDataUpdatedDates.map(
-        ({ article_id, body, votes, author, created_at }) => {
-          return [article_id, body, votes, author, created_at];
-        }
-      );
       const commentSqlString = format(
         `INSERT INTO comments (article_id, body, votes, author, created_at) VALUES %L RETURNING *`,
         formattedCommentData
       );
+
       return db.query(commentSqlString);
     });
 };
