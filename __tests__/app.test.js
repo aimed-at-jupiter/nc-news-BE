@@ -41,7 +41,7 @@ describe("GET /api/topics", () => {
       });
   });
 });
-describe(" GET /api/articles", () => {
+describe("GET /api/articles", () => {
   test("200: Responds with an object with the key of articles and the value of an array of article objects", () => {
     return request(app)
       .get("/api/articles")
@@ -70,6 +70,24 @@ describe(" GET /api/articles", () => {
           const nextDate = new Date(articles[i + 1].created_at);
           expect(currentDate >= nextDate).toBe(true);
         }
+      });
+  });
+});
+describe("GET /api/users", () => {
+  test(" 200: Responds with an object with the key of users and the value of an array of objects", () => {
+    return request(app)
+      .get("/api/users")
+      .expect(200)
+      .then(({ body }) => {
+        const { users } = body;
+        expect(Array.isArray(users)).toBe(true);
+        expect(users.length).toBeGreaterThan(0);
+        users.forEach((user) => {
+          expect(Object.keys(user)).toEqual(["username", "name", "avatar_url"]);
+          expect(typeof user.username).toBe("string");
+          expect(typeof user.name).toBe("string");
+          expect(typeof user.avatar_url).toBe("string");
+        });
       });
   });
 });
