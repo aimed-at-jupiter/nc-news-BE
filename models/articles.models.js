@@ -23,4 +23,13 @@ const fetchArticles = () => {
       return rows;
     });
 };
-module.exports = { fetchArticles };
+
+const fetchArticleById = (id) => {
+  return db
+    .query(`SELECT * FROM articles WHERE article_id = $1`, [id])
+    .then(({ rows }) => {
+      const article = rows[0];
+      return article;
+    });
+};
+module.exports = { fetchArticles, fetchArticleById };
