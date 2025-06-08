@@ -9,11 +9,20 @@ const getArticles = (request, response) => {
   });
 };
 
-const getArticleById = (request, response) => {
+const getArticleById = (request, response, next) => {
   const { article_id } = request.params;
-  fetchArticleById(article_id).then((article) => {
-    response.status(200).send({ article });
-  });
+  if (isNaN(article_id)) {
+    return next({ status: 400, msg: "Invalid article ID" });
+  }
+  fetchArticleById(article_id)
+    .then((article) => {
+      if (!article) {
+        return next({ status: 404, msg: "Article not found" });
+      }
+
+      response.status(200).send({ article });
+    })
+    .catch(next);
 };
 
 module.exports = { getArticles, getArticleById };

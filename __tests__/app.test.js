@@ -108,4 +108,21 @@ describe("GET /api/articles/:article_id", () => {
         expect(typeof article.article_img_url).toBe("string");
       });
   });
+  test("400: Responds with 'Invalid article ID' when passed a non-numeric ID", () => {
+    return request(app)
+      .get("/api/articles/banana")
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Invalid article ID");
+      });
+  });
+
+  test("404: Responds with 'Article not found' when passed a valid but non-existent ID", () => {
+    return request(app)
+      .get("/api/articles/9999")
+      .expect(404)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Article not found");
+      });
+  });
 });
