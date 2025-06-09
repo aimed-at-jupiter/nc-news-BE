@@ -4,7 +4,6 @@ const seed = require("../db/seeds/seed");
 const data = require("../db/data/test-data");
 const request = require("supertest");
 const app = require("../app");
-/* Set up your test imports here */
 
 beforeEach(() => {
   return seed(data);
@@ -120,6 +119,174 @@ describe("GET /api/articles/:article_id", () => {
   test("404: Responds with 'Article not found' when passed a valid but non-existent ID", () => {
     return request(app)
       .get("/api/articles/9999")
+      .expect(404)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Article not found");
+      });
+  });
+});
+describe("GET /api/articles/:article_id/comments", () => {
+  test("200: Responds with an object with the key of comments and the value of an array of comments for the given article_id", () => {
+    return request(app)
+      .get("/api/articles/1/comments")
+      .expect(200)
+      .then(({ body }) => {
+        const { comments } = body;
+        expect(Array.isArray(comments)).toBe(true);
+        expect(comments.length).toBeGreaterThan(0);
+
+        comments.forEach((comment) => {
+          expect(Object.keys(comment)).toEqual([
+            "comment_id",
+            "body",
+            "article_id",
+            "author",
+            "votes",
+            "created_at",
+          ]);
+
+          expect(typeof comment.comment_id).toBe("number");
+          expect(typeof comment.body).toBe("string");
+          expect(typeof comment.article_id).toBe("number");
+          expect(typeof comment.author).toBe("string");
+          expect(typeof comment.votes).toBe("number");
+          expect(typeof comment.created_at).toBe("string");
+        });
+      });
+  });
+});
+test("200: Responds with { comments: [] } when the article has no comments", () => {
+  return request(app)
+    .get("/api/articles/2/comments")
+    .expect(200)
+    .then(({ body }) => {
+      expect(body).toEqual({ comments: [] });
+    });
+});
+test("404: Responds with 'Article not found' for valid but non-existent ID", () => {
+  return request(app)
+    .get("/api/articles/9999/comments")
+    .expect(404)
+    .then(({ body }) => {
+      expect(body.msg).toBe("Article not found");
+    });
+});
+test("400: Responds with 'Invalid article ID' when passed a non-numeric ID", () => {
+  return request(app)
+    .get("/api/articles/banana/comments")
+    .expect(400)
+    .then(({ body }) => {
+      expect(body.msg).toBe("Invalid article ID");
+    });
+});
+
+describe("POST /api/articles/:article_id/comments", () => {
+  test("201: Successfully creates a comment for a valid article_id", () => {
+    const newComment = {
+      username: "butter_bridge",
+      body: "This article is amazing!",
+    };
+
+    return request(app)
+      .post("/api/articles/1/comments")
+      .send(newComment)
+      .expect(201)
+      .then(({ body }) => {
+        expect(body.comment).toHaveProperty("comment_id");
+        expect(body.comment.body).toBe(newComment.body);
+        expect(body.comment.author).toBe(newComment.username);
+        expect(body.comment.article_id).toBe(1);
+        expect(typeof body.comment.created_at).toBe("string");
+      });
+  });
+
+  test("400: Responds with 'Missing required fields: username and body' when missing required fields", () => {
+    const incompleteComment = {
+      username: "butter_bridge",
+    };
+
+    return request(app)
+      .post("/api/articles/1/comments")
+      .send(incompleteComment)
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Missing required fields: username and body");
+      });
+  });
+
+  test("404: Responds with 'Article not found' for valid but non-existent article_id", () => {
+    const newComment = {
+      username: "butter_bridge",
+      body: "This article is amazing!",
+    };
+
+    return request(app)
+      .post("/api/articles/9999/comments")
+      .send(newComment)
+      .expect(404)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Article not found");
+      });
+  });
+
+  test("400: Responds with 'Invalid article ID' for non-numeric article_id", () => {
+    const newComment = {
+      username: "butter_bridge",
+      body: "This article is amazing!",
+    };
+
+    return request(app)
+      .post("/api/articles/banana/comments")
+      .send(newComment)
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Invalid article ID");
+      });
+  });
+});
+describe("PATCH /api/articles/:article_id", () => {
+  test("200: Increments votes by given positive number and responds with updated article object", () => {
+    return request(app)
+      .patch("/api/articles/1")
+      .send({ inc_votes: 1 })
+      .expect(200)
+      .then(({ body }) => {
+        const { article } = body;
+        expect(article).toHaveProperty("votes", 101);
+      });
+  });
+  test("200: Increments votes by given negative number and responds with updated article object", () => {
+    return request(app)
+      .patch("/api/articles/1")
+      .send({ inc_votes: -1 })
+      .expect(200)
+      .then(({ body }) => {
+        const { article } = body;
+        expect(article).toHaveProperty("votes", 99);
+      });
+  });
+  test("400: Responds with 'Invalid article ID' for non-numeric article_id", () => {
+    return request(app)
+      .patch("/api/articles/banana")
+      .send({ inc_votes: 1 })
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Invalid article ID");
+      });
+  });
+  test("400: Responds with 'Invalid vote increment' for non-numeric inc_vote", () => {
+    return request(app)
+      .patch("/api/articles/1")
+      .send({ inc_votes: "banana" })
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Invalid vote increment");
+      });
+  });
+  test("404: Responds with 'Article not found' when article doesn't exist", () => {
+    return request(app)
+      .patch("/api/articles/9999")
+      .send({ inc_votes: 1 })
       .expect(404)
       .then(({ body }) => {
         expect(body.msg).toBe("Article not found");

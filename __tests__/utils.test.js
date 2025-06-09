@@ -35,6 +35,6 @@ describe("convertTimestampToDate", () => {
     expect(result).toEqual(expected);
   });
 });
-describe("", () => {
+describe("lookupObj", () => {
   test("", () => {});
 });

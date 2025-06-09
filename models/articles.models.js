@@ -24,12 +24,31 @@ const fetchArticles = () => {
     });
 };
 
-const fetchArticleById = (id) => {
+const fetchArticleById = (article_id) => {
   return db
-    .query(`SELECT * FROM articles WHERE article_id = $1`, [id])
+    .query(`SELECT * FROM articles WHERE article_id = $1`, [article_id])
     .then(({ rows }) => {
-      const article = rows[0];
-      return article;
+      return rows[0];
     });
 };
-module.exports = { fetchArticles, fetchArticleById };
+
+const updateArticleVotes = (article_id, inc_votes) => {
+  const queryStr = `
+    UPDATE articles
+    SET votes = votes + $1
+    WHERE article_id = $2
+    RETURNING *;
+  `;
+  return db.query(queryStr, [inc_votes, article_id]).then(({ rows }) => {
+    if (!rows.length) {
+      return Promise.reject({ status: 404, msg: "Article not found" });
+    }
+    return rows[0];
+  });
+};
+
+module.exports = {
+  fetchArticles,
+  fetchArticleById,
+  updateArticleVotes,
+};

@@ -4,8 +4,20 @@ const { getTopics } = require("./controllers/topics.controller");
 const {
   getArticles,
   getArticleById,
+  patchArticleVotesById,
 } = require("./controllers/articles.controllers");
 const { getUsers } = require("./controllers/users.controller");
+const {
+  getCommentsByArticleId,
+  postCommentByArticleId,
+} = require("./controllers/comments.controllers");
+
+const {
+  handleCustomErrors,
+  handlePsqlErrors,
+  handleServerError,
+} = require("./errors/handleErrors");
+
 const app = express();
 
 app.use(express.json());
@@ -20,21 +32,16 @@ app.get("/api/users", getUsers);
 
 app.get("/api/articles/:article_id", getArticleById);
 
-app.use((err, req, res, next) => {
-  if (err.status) {
-    res.status(err.status).send({ msg: err.msg });
-  } else next(err);
-});
+app.get("/api/articles/:article_id/comments", getCommentsByArticleId);
 
-app.use((err, req, res, next) => {
-  if (err.code === "22P02") {
-    res.status(400).send({ msg: "Invalid input" });
-  } else next(err);
-});
+app.post("/api/articles/:article_id/comments", postCommentByArticleId);
 
-app.use((err, req, res, next) => {
-  console.log(err);
-  res.status(500).send({ msg: "Internal Server Error" });
-});
+app.patch("/api/articles/:article_id", patchArticleVotesById);
+
+app.use(handleCustomErrors);
+
+app.use(handlePsqlErrors);
+
+app.use(handleServerError);
 
 module.exports = app;
