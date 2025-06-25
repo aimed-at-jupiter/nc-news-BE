@@ -25,11 +25,25 @@ const fetchArticles = () => {
 };
 
 const fetchArticleById = (article_id) => {
-  return db
-    .query(`SELECT * FROM articles WHERE article_id = $1`, [article_id])
-    .then(({ rows }) => {
-      return rows[0];
-    });
+  const queryStr = `
+    SELECT 
+      articles.article_id,
+      articles.author,
+      articles.title,
+      articles.topic,
+      articles.body,
+      articles.created_at,
+      articles.votes,
+      articles.article_img_url,
+      COUNT(comments.comment_id)::INT AS comment_count
+    FROM articles
+    LEFT JOIN comments ON comments.article_id = articles.article_id
+    WHERE articles.article_id = $1
+    GROUP BY articles.article_id;
+  `;
+  return db.query(queryStr, [article_id]).then(({ rows }) => {
+    return rows[0];
+  });
 };
 
 const updateArticleVotes = (article_id, inc_votes) => {

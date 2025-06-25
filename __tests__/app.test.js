@@ -97,6 +97,7 @@ describe("GET /api/articles/:article_id", () => {
       .expect(200)
       .then(({ body }) => {
         const { article } = body;
+        console.log(article);
         expect(article.article_id).toBe(1);
         expect(typeof article.title).toBe("string");
         expect(typeof article.author).toBe("string");
@@ -105,6 +106,7 @@ describe("GET /api/articles/:article_id", () => {
         expect(typeof article.created_at).toBe("string");
         expect(typeof article.votes).toBe("number");
         expect(typeof article.article_img_url).toBe("string");
+        expect(typeof article.comment_count).toBe("number");
       });
   });
   test("400: Responds with 'Invalid article ID' when passed a non-numeric ID", () => {
