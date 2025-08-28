@@ -97,7 +97,6 @@ describe("GET /api/articles/:article_id", () => {
       .expect(200)
       .then(({ body }) => {
         const { article } = body;
-        console.log(article);
         expect(article.article_id).toBe(1);
         expect(typeof article.title).toBe("string");
         expect(typeof article.author).toBe("string");
