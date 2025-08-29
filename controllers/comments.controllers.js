@@ -1,5 +1,9 @@
-const { fetchCommentsByArticleId } = require("../models/comments.models");
-const { insertComment } = require("../models/comments.models");
+const {
+  fetchCommentsByArticleId,
+  insertComment,
+  deleteCommentById,
+} = require("../models/comments.models");
+
 const { checkExists } = require("../db/seeds/utils");
 
 const getCommentsByArticleId = (request, response, next) => {
@@ -45,4 +49,23 @@ const postCommentByArticleId = (request, response, next) => {
       next(err);
     });
 };
-module.exports = { getCommentsByArticleId, postCommentByArticleId };
+
+const removeCommentById = (request, response, next) => {
+  const { comment_id } = request.params;
+
+  if (isNaN(Number(comment_id))) {
+    return next({ status: 400, msg: "Invalid comment ID" });
+  }
+
+  deleteCommentById(comment_id)
+    .then(() => {
+      response.status(204).send();
+    })
+    .catch(next);
+};
+
+module.exports = {
+  getCommentsByArticleId,
+  postCommentByArticleId,
+  removeCommentById,
+};
